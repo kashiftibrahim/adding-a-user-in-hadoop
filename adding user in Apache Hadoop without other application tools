@@ -1,0 +1,97 @@
+Steps are described below 
+-------------------------------------------------------------------
+1) sudo adduser <username>
+
+2) sudo adduser <username> sudo
+
+3) hadoop fs -mkdir /user/<username>
+
+4) hadoop fs -chown <username>:supergroup /user/<username>
+
+5) hadoop fs -ls /user
+
+6) su <username>
+
+7) vi .bashrc 
+  (!--export the path of hadoop--  /user/local/hadoop )
+ 
+-------------------------------------------------------------------
+
+
+
+If several users are doing tasks using the same user account, it will be difficult to trace the jobs and track the tasks/defects done by each user.
+
+Also the other issue is with the security.
+
+If all are given the same user account, all users will have the same privilege and all can access everyone’s  data, can modify it, can perform execution, can delete it also.
+
+This is a very serious issue.
+
+For this we need to create multiple user accounts.
+Benefits of Creating multiple users
+
+1)      The directories/files of other users cannot be modified by a user.
+
+2)      Other users cannot add new files to a user’s directory.
+
+3)      Other users cannot perform any tasks (mapreduce etc) on a user’s files.
+
+In short data is safe and is accessible only to the assigned user and the superuser.
+Steps for setting up multiple User accounts
+
+For adding new user capable of performing hadoop operations, do the following steps.
+Step 1
+Creating a New User
+
+For Ubuntu
+
+sudo  adduser  --ingroup   <groupname>   <username>
+
+For RedHat variants
+
+useradd  -g <groupname>   <username>
+
+passwd <username>
+
+Then enter the user details and password.
+Step 2
+
+we need to change the permission of a directory in HDFS where hadoop stores its temporary data.
+
+Open the core-site.xml file
+
+Find the value of hadoop.tmp.dir.
+
+In my core-site.xml, it is /app/hadoop/tmp. In the proceeding steps, I will be using /app/hadoop/tmp as my directory for storing hadoop data ( ie value of hadoop.tmp.dir).
+
+Then from the superuser account do the following step.
+
+hadoop fs –chmod -R  1777 /app/hadoop/tmp/mapred/staging
+
+Step 3
+
+The next step is to give write permission to our user group on hadoop.tmp.dir (here /app/hadoop/tmp. Open core-site.xml to get the path for hadoop.tmp.dir). This should be done only in the machine(node) where the new user is added.
+
+chmod 777 /app/hadoop/tmp
+
+Step 4
+
+The next step is to create a directory structure in HDFS for the new user.
+
+For that from the superuser, create a directory structure.
+
+Eg: hadoop  fs –mkdir /user/username/
+Step 5
+
+With this we will not be able to run mapreduce programs, because the ownership of the newly created directory structure is with superuser. So change the ownership of newly created directory in HDFS  to the new user.
+
+hadoop  fs –chown –R username:groupname   <directory to access in HDFS>
+
+Eg: hadoop fs –chown –R username:groupname  /user/username/
+
+Step 6
+
+login as the new user and perform hadoop jobs..
+
+su  – username
+
